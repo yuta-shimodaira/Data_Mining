@@ -1,0 +1,42 @@
+cbc <- read.csv("CharlesBookClub.csv")
+
+cbc$Mcode <- as.factor(cbc$Mcode)
+cbc$Rcode <- as.factor(cbc$Rcode)
+cbc$Fcode <- as.factor(cbc$Fcode)
+
+# Partition the data into training (60%) and validation (40%)
+
+set.seed(1)
+train_row <- sample(row.names(cbc), dim(cbc)*.6)
+valid_row <- setdiff(row.names(cbc), train_row)
+
+train_data <- cbc[train_row,]
+valid_data <- cbc[valid_row,]
+
+colnames(train_data)
+sum(train_data[,23])
+sum(train_data[,24])
+
+## 1
+
+mean(train_data[,23])
+
+rfm_resp = aggregate(train_data$Yes_Florence, by = list(Rcode = train_data$Rcode,
+                                                        Fcode = train_data$Fcode,
+                                                        Mcode = train_data$Mcode), FUN = mean)
+rfm_resp
+
+## 2.
+
+above_avg <- rfm_resp[rfm_resp$x > mean(train_data[,23]),]
+
+colnames(valid_data)
+
+rfm_valid_data <- valid_data[,c(21, 22, 20, 23)]
+
+above_valid_data <- rfm_valid_data[(!is.na(match(interaction(rfm_valid_data$Rcode,
+                                                             rfm_valid_data$Fcode,
+                                                             rfm_valid_data$Mcode),
+                                                 interaction(above_avg$Rcode,
+                                                             above_avg$Fcode,
+                                                             above_avg$Mcode)))),]
